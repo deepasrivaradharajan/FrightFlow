@@ -8,7 +8,8 @@ const menus = [
   { name: "Drivers", path: "/drivers", icon: "👤" },
   { name: "Trips & Routes", path: "/trips", icon: "⇄" },
   { name: "Fuel Monitoring", path: "/fuel", icon: "⛽" },
-  { name: "Maintenance", path: "/maintenance", icon: "🔧" },
+  { name: "Maintenance", path: "/maintenance", icon: "🔧" }, 
+     { name: "Settings", path: "/settings", icon: "⚙️" },
 ];
 
 export default function Sidebar() {

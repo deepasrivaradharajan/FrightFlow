@@ -1,5 +1,10 @@
 import client from "./client";
 
+export const registerUser = (data) => client.post("/auth/register", data);
+export const loginUser = (data) => client.post("/auth/login", data);
+export const getProfile = () => client.get("/auth/profile");
+export const updateProfile = (data) => client.put("/auth/profile", data);
+
 export const getDrivers = () => client.get("/drivers/");
 export const getDriver = (id) => client.get(`/drivers/${id}`);
 export const getDriverPerformance = (id) => client.get(`/drivers/${id}/performance`);
