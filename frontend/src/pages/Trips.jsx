@@ -1,130 +1,59 @@
-import { useState } from 'react'
-import { Route as RouteIcon, Plus, Calendar } from 'lucide-react'
-import api from '../api/axios'
-import { canEdit } from '../utils/permissions'
-import { getStatusBadgeClass } from '../utils/statusBadge'
-import AddTripModal from '../components/AddTripModal'
-import RowMenu from '../components/RowMenu'
-import CustomSelect from '../components/CustomSelect'
+import React, { useEffect, useState } from "react";
+import { getTrips } from "../api/endpoints";
+import { StatusBadge } from "./Dashboard";
 
-export default function Trips({ trips = [], vehicles = [], drivers = [], shipments = [], loading, search, onTripAdded, onTripDeleted }) {
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [showModal, setShowModal] = useState(false)
-  const [editingTrip, setEditingTrip] = useState(null)
-  const [deletingId, setDeletingId] = useState(null)
+export default function Trips() {
+  const [trips, setTrips] = useState([]);
+  const [error, setError] = useState("");
 
-  const filteredTrips = (trips || []).filter(t => {
-    const matchesSearch =
-      t.origin?.toLowerCase().includes(search.toLowerCase()) ||
-      t.destination?.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || t.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  useEffect(() => {
+    getTrips()
+      .then((res) => setTrips(res.data))
+      .catch((err) => setError(err.message));
+  }, []);
 
-  const handleDelete = async (tripId) => {
-    if (deletingId === tripId) return
-    if (!window.confirm('Are you sure you want to delete this trip?')) return
-    setDeletingId(tripId)
-    try {
-      await api.delete(`/trips/${tripId}`)
-      onTripDeleted(tripId)
-    } catch (err) {
-      alert(err.response?.data?.detail || 'Failed to delete trip')
-    } finally {
-      setDeletingId(null)
-    }
-  }
-
-  const formatDateTime = (iso) => {
-    if (!iso) return '—'
-    return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
-  }
+  const total = trips.length;
+  const active = trips.filter((t) => ["Scheduled", "In Progress"].includes(t.status)).length;
+  const completed = trips.filter((t) => t.status === "Completed").length;
 
   return (
-    <div className="ff-section">
-      <div className="ff-page-header">
-        <div>
-          <div className="ff-section-title"><Calendar size={16} /><span>Trip Scheduling</span></div>
-          <p className="ff-page-subtitle">Plan and manage upcoming and ongoing trips</p>
-        </div>
-        {canEdit() && (
-          <button className="ff-btn-primary" onClick={() => setShowModal(true)}>
-            <Plus size={15} /> Schedule Trip
-          </button>
-        )}
+    <div>
+      <h1 className="page-title">Trips & Routes</h1>
+      <p className="page-subtitle">Every scheduled, running and completed trip.</p>
+
+      {error && <p style={{ color: "var(--danger)" }}>{error}</p>}
+
+      <div className="stat-grid">
+        <div className="stat-card"><span className="stat-label">Total Trips</span><p className="stat-value">{total}</p></div>
+        <div className="stat-card"><span className="stat-label">Active</span><p className="stat-value">{active}</p></div>
+        <div className="stat-card"><span className="stat-label">Completed</span><p className="stat-value">{completed}</p></div>
       </div>
 
-      <div className="ff-filter-bar">
-        <CustomSelect
-          value={statusFilter}
-          onChange={setStatusFilter}
-          options={[
-            { value: 'all', label: 'All Status' },
-            { value: 'scheduled', label: 'Scheduled' },
-            { value: 'ongoing', label: 'Ongoing' },
-            { value: 'completed', label: 'Completed' },
-            { value: 'cancelled', label: 'Cancelled' },
-          ]}
-        />
-        <span className="ff-count-pill">{filteredTrips.length} shown</span>
-      </div>
-
-      <div className="ff-table-wrap">
-        <table className="ff-table">
+      <div className="card">
+        <h3 className="card-title">Trip Log</h3>
+        <table className="data-table">
           <thead>
             <tr>
-              <th>Route</th><th>Vehicle</th><th>Driver</th><th>Start</th><th>End</th><th>Status</th><th></th>
+              <th>ID</th><th>Pickup</th><th>Destination</th><th>Driver</th><th>Vehicle</th><th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {filteredTrips.length === 0 && !loading && (
-              <tr className="ff-empty-row"><td colSpan="7">No trips scheduled yet</td></tr>
+            {trips.map((t) => (
+              <tr key={t.id}>
+                <td>TR-{t.id}</td>
+                <td>{t.pickup_location}</td>
+                <td>{t.destination}</td>
+                <td>DR-{t.driver_id}</td>
+                <td>VH-{t.vehicle_id}</td>
+                <td><StatusBadge status={t.status} /></td>
+              </tr>
+            ))}
+            {trips.length === 0 && (
+              <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--text-muted)" }}>No trips yet</td></tr>
             )}
-            {filteredTrips.map(t => {
-              const vehicle = vehicles.find(v => v.id === t.vehicle_id)
-              const driver = drivers.find(d => d.id === t.driver_id)
-              return (
-                <tr key={t.id}>
-                  <td className="ff-reg-cell" data-label="Route">{t.origin} &rarr; {t.destination}</td>
-                  <td data-label="Vehicle">{vehicle?.registration_number || '—'}</td>
-                  <td data-label="Driver">{driver?.name || '—'}</td>
-                  <td data-label="Start">{formatDateTime(t.scheduled_start)}</td>
-                  <td data-label="End">{formatDateTime(t.scheduled_end)}</td>
-                  <td data-label="Status">
-                    <span className={`ff-badge status-${getStatusBadgeClass(t.status)}`}>{t.status}</span>
-                  </td>
-                  <td data-label="" style={{ textAlign: 'right' }}>
-                    {canEdit() && (
-                      <RowMenu onEdit={() => setEditingTrip(t)} onDelete={() => handleDelete(t.id)} />
-                    )}
-                  </td>
-                </tr>
-              )
-            })}
           </tbody>
         </table>
       </div>
-
-      {showModal && (
-        <AddTripModal
-          vehicles={vehicles}
-          drivers={drivers}
-          shipments={shipments}
-          onClose={() => setShowModal(false)}
-          onSuccess={(trip) => onTripAdded(trip)}
-        />
-      )}
-
-      {editingTrip && (
-        <AddTripModal
-          vehicles={vehicles}
-          drivers={drivers}
-          shipments={shipments}
-          tripToEdit={editingTrip}
-          onClose={() => setEditingTrip(null)}
-          onSuccess={(trip, isEdit) => { if (isEdit) onTripAdded(trip, true) }}
-        />
-      )}
     </div>
-  )
+  );
 }

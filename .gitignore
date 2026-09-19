@@ -1,9 +1,6 @@
 # Virtual Environment
 venv/
 
-# Reset password
-backend\.env
-
 # Python
 __pycache__/
 *.pyc
@@ -23,16 +20,14 @@ backend/alembic/__pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+# Frontend
+frontend/node_modules/
+frontend/dist/
 
-# Node
-node_modules/
-dist/
+# Backend virtual environment
+backend/venv/
+freightflow.db
 
-# API key
-frontend/.env
-
-uploads/
-
-backend/celerybeat-schedule
-backend/celerybeat-schedule-shm
-backend/celerybeat-schedule-wal
+celerybeat-schedule.bak
+celerybeat-schedule.dat
+celerybeat-schedule.dir
