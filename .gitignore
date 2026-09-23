@@ -1,5 +1,7 @@
 # Virtual Environment
 venv/
+testenv/
+backend/testenv/
 
 # Python
 __pycache__/
