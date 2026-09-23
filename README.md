@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # FleetFlow – Logistics & Fleet Management Platform
 
 ## Project Overview
@@ -68,3 +69,7 @@ Interactive API docs available at `/docs` once the backend is running.
 
 ## Environment Variables
 See `.env.example` for required configuration (database URL, JWT secret, CORS origins, ORS API key).
+=======
+# FrightFlow
+FrightFlow is a full-stack fleet management platform that helps logistics operators manage vehicles, drivers, shipments, trips, maintenance, and fuel consumption from a single system. It solves the problem of fragmented fleet operations by unifying trip scheduling, real-time GPS tracking, maintenance alerts, and operational analytics
+>>>>>>> personal/main
